@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+out/
+*.tsbuildinfo
+
+# VS Code extension
+*.vsix
+.vscode-test/
+
+# Tab runtime state
+.tab/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Logs and coverage
+*.log
+coverage/
+
+# OS
+.DS_Store
+Thumbs.db
