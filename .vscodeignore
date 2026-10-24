@@ -1,0 +1,22 @@
+# Files left OUT of the .vsix package.
+# The .vsix only needs package.json, dist/, README.md and LICENSE.
+
+# Source code: already bundled into dist/extension.js
+src/**
+test/**
+tsconfig.json
+
+# Dependencies: bundled too, so node_modules isn't needed
+node_modules/**
+bun.lock
+
+# Project docs and repo files
+docs/**
+AGENTS.md
+.gitignore
+.git/**
+.vscode/**
+.vscode-test/**
+
+# Old packages
+*.vsix

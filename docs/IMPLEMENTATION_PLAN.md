@@ -10,7 +10,7 @@ More phases will be added later, based on the backlog and changelog.
 - [x] DATA: inventory, dataflow, trigger message
 - [x] DESIGN: structure, components, agent contract
 - [x] TECHSTACK
-- [ ] Bundled instructions (the prompt the agent gets at launch)
+- [x] Bundled instructions (the prompt the agent gets at launch): `src/instructions.md`
 
 ## Phase 2 · Setup
 

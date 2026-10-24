@@ -1,0 +1,29 @@
+{
+  "name": "tab",
+  "displayName": "Tab",
+  "publisher": "locchh",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/locchh/tab"
+  },
+  "private": true,
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "scripts": {
+    "build": "bun build src/extension.ts --outdir dist --target=node --format=cjs --external vscode",
+    "typecheck": "tsc",
+    "package": "bun run build && bunx @vscode/vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@types/bun": "1.3.14",
+    "@types/node": "24.10.1",
+    "@types/vscode": "1.90.0",
+    "typescript": "5.9.3"
+  }
+}
