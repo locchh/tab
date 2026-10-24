@@ -11,6 +11,6 @@
 - If I can't understand it, it doesn't belong here.
 - Simple beats clever.
 - Small pieces with clear names. The code should explain itself.
-- Comments say why, not what.
+- Write comments a newbie can follow: what each part does and why.
 - No library unless it really earns its place.
 - Build only what we need now, not what we might need later.
