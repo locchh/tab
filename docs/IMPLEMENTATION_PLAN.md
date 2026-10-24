@@ -16,7 +16,7 @@ More phases will be added later, based on the backlog and changelog.
 
 - [x] `package.json`, `tsconfig`, Bun build, `.vsix` packaging
 - [x] Empty extension that activates and shows "Tab" in the status bar
-- [ ] Test setup: `bun test` and a headless VS Code run
+- [x] Test setup: `bun test`
 
 ## Phase 3 · Build MVP
 
@@ -30,4 +30,5 @@ More phases will be added later, based on the backlog and changelog.
 - [ ] `completion.ts`: show ghost text
 - [ ] `status.ts`: status bar, effort picker, log
 - [ ] Error handling from the Errors table
+- [ ] Headless VS Code test
 - [ ] README install steps
