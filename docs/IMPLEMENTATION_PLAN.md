@@ -17,6 +17,7 @@ More phases will be added later, based on the backlog and changelog.
 - [x] `package.json`, `tsconfig`, Bun build, `.vsix` packaging
 - [x] Empty extension that activates and shows "Tab" in the status bar
 - [x] Test setup: `bun test`
+- [x] Lint + format: Biome
 
 ## Phase 3 · Build MVP
 

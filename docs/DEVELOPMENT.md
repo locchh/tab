@@ -12,7 +12,10 @@ code --extensionDevelopmentPath=$PWD
 ## Check
 
 ```bash
-bun run typecheck
+bun run typecheck   # type errors
+bun run lint        # lint + format problems
+bun run format      # fix what can be fixed automatically
+bun run test        # unit tests
 ```
 
 ## Package

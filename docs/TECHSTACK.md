@@ -19,6 +19,7 @@ What Tab is built with and runs on. Versions are the ones in use on 2026-10-24.
 | `@types/vscode` | 1.90.0  | dev               | VS Code extension API types         | [VS Code API reference](https://code.visualstudio.com/api/references/vscode-api) |
 | `@types/node`   | 24.10.1 | dev               | Node types for the extension        | [nodejs.org/docs](https://nodejs.org/docs/latest/api/)               |
 | `@types/bun`    | 1.3.14  | dev               | Bun types for the tests             | [bun.sh/docs](https://bun.sh/docs)                                   |
+| `@biomejs/biome` | 2.6.3  | dev               | Lint + format; `bun run lint`       | [biomejs.dev](https://biomejs.dev/)                                  |
 
 No agent SDKs, no schema library, no UI framework.
 
@@ -48,6 +49,7 @@ Details: [SKETCH.md › Long-lived agent session](SKETCH.md#long-lived-agent-ses
 | Extension build        | `bun build --target=node --format=cjs --external vscode`           | [Bun bundler](https://bun.sh/docs/bundler)                                         |
 | Unit tests             | `bun test`                                                         | [Bun test runner](https://bun.sh/docs/cli/test)                                    |
 | Typecheck              | `tsc` (`bun run typecheck`)                                        | [TypeScript](https://www.typescriptlang.org/docs/)                                 |
+| Lint + format          | `biome check` (`bun run lint`, `bun run format`)                   | [Biome](https://biomejs.dev/)                                                      |
 | Headless VS Code tests | VS Code's Electron binary under `xvfb-run`, `--extensionTestsPath` | [Testing extensions](https://code.visualstudio.com/api/working-with-extensions/testing-extension) |
 | UI checks              | Playwright (installed globally, not a project dependency)          | [Playwright for Electron](https://playwright.dev/docs/api/class-electron)          |
 
