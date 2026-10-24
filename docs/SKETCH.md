@@ -17,7 +17,7 @@ The agent does not know the project at the start. It explores with its own tools
 Keeping up with changes:
 
 - On every trigger, the agent reads the current State from `.tab/` (latest change, cursor, file, effort).
-- If the change touches something it read earlier, it re-reads that instead of trusting its memory.
+- Files listed in the State's `changed` field are re-read instead of trusted from memory.
 - Context that is still valid is reused, so later requests stay fast even at higher effort.
 
 Triggers (both always on, at every effort level):
@@ -152,6 +152,7 @@ What the extension knows about the user. Kept in memory and pushed to `.tab/` ev
     "start": { "line": 42, "col": 1 }, "end": { "line": 42, "col": 1 },
     "text": "To sign in, "
   },
+  "changed": ["src/auth/token.ts", "docs/guide.md"],
   "visits": [
     { "file": "docs/guide.md", "since": "2026-10-24T14:31:58.900Z", "actions": ["edit"] },
     { "file": "src/auth/login.ts", "dwellMs": 2800, "actions": ["select"] }
@@ -177,7 +178,8 @@ What the extension knows about the user. Kept in memory and pushed to `.tab/` ev
 | `.text`       | Active file content. Only when `dirty`; otherwise the agent reads disk.    | `editor.document.getText()`                                                                                     |
 | `.lineCount`  | Lines in the file. `1` with no content means an empty file.                | `editor.document.lineCount`; empty when `document.getText().trim() === ""`.                                     |
 | `lastChange`  | The most recent edit: replaced range (before the edit) and inserted text.  | `workspace.onDidChangeTextDocument` → `event.contentChanges` (`range`, `text`), converted to 1-based.           |
-| `visits`      | Files visited, most recent first.                                          | The extension's own list: a visit starts and ends on `window.onDidChangeActiveTextEditor`.                      |
+| `changed`     | Files edited, saved, created or deleted since the last completed turn, including outside the editor (e.g. `git pull`). Cleared when a turn completes, so an interrupted turn never loses the list. | `workspace.onDidChangeTextDocument` plus a `workspace.createFileSystemWatcher` for disk changes. |
+| `visits`      | Files visited, most recent first. At most 20; a revisit moves the file to the top (actions merged, `dwellMs` added up); deleted files are removed. | The extension's own list: a visit starts and ends on `window.onDidChangeActiveTextEditor`.                      |
 | `.since`      | Current visit only: when it started.                                       | Time recorded when the visit starts.                                                                            |
 | `.dwellMs`    | Finished visits only: how long the user stayed, in milliseconds.           | `Date.now() - since` when the visit ends.                                                                       |
 | `.actions`    | What the user did there: `edit`, `select`, `cursor`, `scroll`.             | `edit`: `workspace.onDidChangeTextDocument`. `select`: `onDidChangeTextEditorSelection` with a non-empty selection. `cursor`: same event, empty selection. `scroll`: `window.onDidChangeTextEditorVisibleRanges`. |
@@ -188,7 +190,8 @@ Rules:
 - Raw facts only. The agent works out meaning (enclosing function or section, what's missing).
 - The extension writes `.tab/`; the agent only reads it.
 - The State is written on every sync interval and once more right before each trigger.
-- `lastChange` and `docVersion` tell the agent what to re-read; context that is still valid is reused.
+- The agent reuses files it read in earlier turns, except the active file (always from `active.text` or disk)
+  and files in `changed` (re-read before relying on them).
 - Visits are weak hints; actions count more. The agent checks that a visited file is
   linked to the work before using it.
 - Line and column numbers are 1-based. VS Code's 0-based positions are converted.
