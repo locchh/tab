@@ -28,7 +28,7 @@ More phases will be added later, based on the backlog and changelog.
 - [x] `agents/agent.ts`: the contract
 - [x] `agents/process.ts`: shared process plumbing (spawn, read lines, stop) + tests
 - [x] `agents/claude.ts`: Claude Code adapter
-- [x] `agents/codex.ts`: Codex adapter (successful reply untested: Codex usage limit hit)
+- [x] `agents/codex.ts`: Codex adapter
 - [x] `session.ts`: lifecycle, interrupt, deadlines, crash restart + tests (sleep/resume, context full, retries → Error handling)
 - [x] `reply.ts`: shape + `docVersion` check + tests (retry once on bad reply → Error handling)
 - [x] `completion.ts`: show ghost text
