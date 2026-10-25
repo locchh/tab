@@ -11,6 +11,61 @@ project and suggests what comes next, right at the cursor. Press **Tab** to acce
 - **Read-only:** the agent never edits your files
 - **Your own agent:** uses your installed CLI and login, no extra account
 
+## Two suggestion loops
+
+Either way, an agent CLI reads your codebase and cursor, and suggests at the cursor.
+
+| | Internal | External |
+|---|---|---|
+| Who suggests | Tab's own agent | an agent CLI you run (Claude Code, Codex, …) |
+| When | every time you pause typing | on an interval (e.g. every minute) |
+| Reads the codebase + cursor | ✅ | ✅ |
+| You can talk to it while it works | ❌ | ✅ chat in the same session to steer the next suggestion |
+
+### Internal mode · automatic (default)
+
+```mermaid
+flowchart LR
+    You((You)) -- type, then pause --> Tab[VS Code + Tab]
+    Tab -- writes --> State[(.tab/state.json<br/>file · cursor · recent edits)]
+    Tab -- "go, make a suggestion" --> Agent[Tab's agent<br/>in the background]
+    State -. reads .-> Agent
+    Agent -. reads .-> Code[(Your codebase)]
+    Agent -- suggestion --> Tab
+    Tab -- ghost text --> You
+```
+
+Nothing to set up: pause typing (or press `Ctrl+Alt+Space`) and the suggestion appears.
+
+### External mode · you stay in the loop
+
+```mermaid
+flowchart LR
+    You((You)) -- type --> Tab[VS Code + Tab]
+    Tab -- writes --> State[(.tab/state.json<br/>file · cursor · recent edits)]
+    State -. reads, every interval .-> Agent[Your agent CLI<br/>e.g. Claude Code /loop]
+    Agent -. reads .-> Code[(Your codebase)]
+    Agent -- writes --> Inbox[(.tab/suggestion.json)]
+    Inbox -- read, then deleted --> Tab
+    Tab -- ghost text --> You
+    You -- "chat: why? shorter? resend" --> Agent
+```
+
+1. Switch the mode to **External** (status bar → Mode).
+2. Copy [`assets/SKILL.md`](assets/SKILL.md) into your project.
+3. Run your agent in a loop:
+
+```bash
+# Claude Code: copy the skill to .claude/skills/tab-suggest/SKILL.md, then (1 minute minimum)
+/loop 1m /tab-suggest
+
+# Codex (no built-in loop; each run starts fresh, so no chatting in between)
+while true; do codex exec "follow SKILL.md"; sleep 3; done
+```
+
+To stop: ask Claude to cancel its loop, or `Ctrl+C` the Codex loop. Each run uses your agent's
+quota, even when nothing changed.
+
 ## Requirements
 
 - VS Code 1.90+ on Linux
@@ -47,24 +102,6 @@ Reload VS Code and look for **✨ Tab: Low** in the status bar.
 | Medium | The rest of the function, paragraph or section |
 | High | The whole file or document |
 | Auto | Whatever the spot needs: the agent decides |
-
-## External mode
-
-Let another agent suggest instead of Tab's own: switch the mode to **External**, copy
-[`assets/SKILL.md`](assets/SKILL.md) into your project, and run your agent in a loop. Each run
-reads `.tab/state.json` and writes one suggestion to `.tab/suggestion.json`; Tab shows it and
-deletes it.
-
-```bash
-# Claude Code (built-in loop, 1 minute minimum)
-/loop 1m follow SKILL.md
-
-# Codex (no built-in loop)
-while true; do codex exec "follow SKILL.md"; sleep 3; done
-```
-
-To stop: `Ctrl+C` the Codex loop, or ask Claude to cancel its loop. Each run uses your agent's
-quota, even when nothing changed.
 
 ## Good to know
 
