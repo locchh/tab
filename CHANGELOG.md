@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.3 · 2026-10-25
+
+- Modes: Paused, Internal, External (replaces Pause)
+- External mode: show suggestions other tools write to `.tab/suggestion.json`
+- `assets/SKILL.md` for external agents (Claude Code `/loop`, `codex exec` loops)
+
 ## 0.0.2 · 2026-10-25
 
 - Auto effort: the agent decides how far to look and how much to write

@@ -25,7 +25,7 @@ Tab isn't on the Marketplace yet. Build it and install the `.vsix`:
 git clone https://github.com/locchh/tab && cd tab
 bun install
 bun run package
-code --install-extension tab-0.0.2.vsix
+code --install-extension tab-0.0.3.vsix
 ```
 
 Reload VS Code and look for **✨ Tab: Low** in the status bar.
@@ -39,6 +39,7 @@ Reload VS Code and look for **✨ Tab: Low** in the status bar.
 | Dismiss it | Keep typing |
 | Change effort, agent or timing | Click **Tab** in the status bar |
 | See what's happening | View → Output → **Tab** |
+| Switch mode (Paused / Internal / External) | Click **Tab** in the status bar → Mode |
 
 | Effort | What it writes |
 |---|---|
@@ -46,6 +47,24 @@ Reload VS Code and look for **✨ Tab: Low** in the status bar.
 | Medium | The rest of the function, paragraph or section |
 | High | The whole file or document |
 | Auto | Whatever the spot needs: the agent decides |
+
+## External mode
+
+Let another agent suggest instead of Tab's own: switch the mode to **External**, copy
+[`assets/SKILL.md`](assets/SKILL.md) into your project, and run your agent in a loop. Each run
+reads `.tab/state.json` and writes one suggestion to `.tab/suggestion.json`; Tab shows it and
+deletes it.
+
+```bash
+# Claude Code (built-in loop, 1 minute minimum)
+/loop 1m follow SKILL.md
+
+# Codex (no built-in loop)
+while true; do codex exec "follow SKILL.md"; sleep 3; done
+```
+
+To stop: `Ctrl+C` the Codex loop, or ask Claude to cancel its loop. Each run uses your agent's
+quota, even when nothing changed.
 
 ## Good to know
 

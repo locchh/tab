@@ -5,6 +5,7 @@
 src/**
 test/**
 tsconfig.json
+biome.json
 
 # Dependencies: bundled too, so node_modules isn't needed
 node_modules/**
@@ -23,3 +24,6 @@ AGENTS.md
 
 # Local playground
 tmp/**
+
+# Repo-only files (users copy them by hand)
+assets/**

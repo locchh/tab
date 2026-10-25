@@ -14,6 +14,7 @@ Shapes of the State and the Reply: [SKETCH.md › State](SKETCH.md#state), [SKET
 | Settings | VS Code config | User | Extension | On change |
 | Session ID | Memory | Extension | Extension | To resume after sleep. Lost on VS Code restart, which starts a fresh session. |
 | Logs | Output channel "Tab" | Extension | User | Always |
+| External suggestion | `.tab/suggestion.json` | Another tool (External mode) | Extension, then deleted | Whenever the other tool writes one |
 
 ## Dataflow
 

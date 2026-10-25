@@ -15,6 +15,7 @@ For the why behind it, see [SKETCH.md](SKETCH.md). For the file list, see [DESIG
 | `session.ts` | Keeps one agent alive, runs one turn at a time | No |
 | `reply.ts` | Checks the agent's reply: right shape, still fresh | No |
 | `completion.ts` | Shows the checked suggestion as ghost text | Yes |
+| `inbox.ts` | External mode: reads `.tab/suggestion.json`, deletes it, passes it on | Yes |
 | `agents/agent.ts` | The contract every agent follows | No |
 | `agents/claude.ts` | Talks to Claude Code (JSON lines) | No |
 | `agents/codex.ts` | Talks to Codex (JSON-RPC) | No |
@@ -37,6 +38,7 @@ flowchart TB
     Ext -- creates --> Triggers[Triggers]
     Ext -- creates --> Session[Session]
     Ext -- creates --> Completion[Completion]
+    Ext -- "creates (External mode)" --> Inbox[Inbox]
     Ext -- uses --> Reply[reply.ts]
 
     Tracker -- uses --> State[state.ts]

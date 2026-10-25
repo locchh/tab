@@ -16,11 +16,6 @@ Ideas and leftovers for after the MVP. Grouped items become the next phase.
 
 ## Ideas
 
-- Modes instead of Pause: **Paused** (nothing runs), **Internal** (Tab's agent suggests,
-  today's behavior), **External** (agent stopped; Tab shows suggestions dropped into
-  `.tab/suggestion.json` by other tools, e.g. Claude in chat). Same checker for both.
-  State is still written in External. No "both" mode.
-
 - Effort as a limit, not a target: effort sets how far the agent looks and the most it
   may write; the agent writes only what the spot needs (one line left = one line, even on High)
 - Comments in suggestions, or an explanation shown on the side

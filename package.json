@@ -2,7 +2,7 @@
   "name": "tab",
   "displayName": "Tab",
   "publisher": "locchh",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "repository": {
     "type": "git",
     "url": "https://github.com/locchh/tab"
@@ -19,10 +19,20 @@
     "configuration": {
       "title": "Tab",
       "properties": {
-        "tab.enabled": {
-          "type": "boolean",
-          "default": true,
-          "description": "Turn Tab's suggestions on or off."
+        "tab.mode": {
+          "type": "string",
+          "enum": [
+            "paused",
+            "internal",
+            "external"
+          ],
+          "default": "internal",
+          "enumDescriptions": [
+            "No suggestions",
+            "Tab's own agent suggests",
+            "Other tools write suggestions to .tab/suggestion.json (see assets/SKILL.md)"
+          ],
+          "description": "Where suggestions come from."
         },
         "tab.effort": {
           "type": "string",

@@ -5,6 +5,9 @@
 // How far the agent looks and how much it writes. "auto" = the agent decides both.
 export type Effort = "low" | "medium" | "high" | "auto";
 
+// Where suggestions come from: nowhere, Tab's own agent, or other tools via .tab/suggestion.json.
+export type Mode = "paused" | "internal" | "external";
+
 // A spot in a file. Both numbers are 1-based (VS Code uses 0-based; state.ts converts).
 export interface Position {
   line: number;

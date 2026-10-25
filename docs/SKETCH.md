@@ -47,6 +47,22 @@ At launch, the agent only receives the instructions. It learns the State only by
 
 - **Agent CLI:** Reads the project and generates suggestions (read-only). Installed and logged in by the user.
 
+- **Inbox (External mode):** `.tab/suggestion.json`, where other tools drop a Reply. Tab reads it, deletes it, and shows it through the same checker. External agents follow `assets/SKILL.md`.
+
+## Modes
+
+Where suggestions come from (`tab.mode`, picked from the status bar popup):
+
+| Mode | Tab's agent | Inbox `.tab/suggestion.json` |
+|---|---|---|
+| **Paused** | stopped | ignored |
+| **Internal** (default) | running | ignored |
+| **External** | stopped | watched |
+
+The State is written in every mode. In External, another agent runs on its own loop (Claude
+Code `/loop`, a `codex exec` shell loop) following `assets/SKILL.md`. Details:
+[plans/001-cr-modes.md](plans/001-cr-modes.md).
+
 ## Requirements
 
 ### Functional Requirements

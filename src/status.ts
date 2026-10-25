@@ -5,7 +5,7 @@
 
 import * as vscode from "vscode";
 import type { SessionStatus } from "./session";
-import type { Effort } from "./types";
+import type { Effort, Mode } from "./types";
 
 // One row in a popup menu: what it shows, plus the value it stands for.
 interface Option<T> extends vscode.QuickPickItem {
@@ -19,7 +19,7 @@ export class Status implements vscode.Disposable {
   private effort: Effort = "low";
   private session: SessionStatus = "starting";
   private detail = ""; // extra info for the tooltip, e.g. an error message
-  private paused = false;
+  private mode: Mode = "internal";
   // A short outcome shown for a few seconds, e.g. "no suggestion".
   private flashText = "";
   private flashTimer: ReturnType<typeof setTimeout> | undefined;
@@ -50,8 +50,8 @@ export class Status implements vscode.Disposable {
     this.render();
   }
 
-  setPaused(paused: boolean): void {
-    this.paused = paused;
+  setMode(mode: Mode): void {
+    this.mode = mode;
     this.render();
   }
 
@@ -80,10 +80,7 @@ export class Status implements vscode.Disposable {
       { label: "$(hubot) Agent", description: AGENT_NAMES[agent] ?? agent, value: "agent" },
       { label: "$(clock) Suggest after", description: `${delay / 1000} s`, value: "delay" },
       { label: "$(sync) Sync interval", description: `${sync} ms`, value: "sync" },
-      {
-        label: this.paused ? "$(debug-start) Resume Tab" : "$(debug-pause) Pause Tab",
-        value: "pause",
-      },
+      { label: "$(symbol-enum) Mode", description: capitalize(this.mode), value: "mode" },
       { label: "$(output) Open log", value: "log" },
     ];
     const picked = await vscode.window.showQuickPick(rows, {
@@ -120,9 +117,16 @@ export class Status implements vscode.Disposable {
           { label: "300 ms", value: 300 },
           { label: "500 ms", value: 500 },
         ]);
-      case "pause":
-        await config.update("enabled", this.paused, vscode.ConfigurationTarget.Global);
-        return;
+      case "mode":
+        return this.pickAndSave("mode", "Where suggestions come from", [
+          { label: "Paused", detail: "No suggestions", value: "paused" },
+          { label: "Internal", detail: "Tab's own agent suggests", value: "internal" },
+          {
+            label: "External",
+            detail: "Other tools write to .tab/suggestion.json (see assets/SKILL.md)",
+            value: "external",
+          },
+        ]);
       case "log":
         this.output.show();
         return;
@@ -147,8 +151,11 @@ export class Status implements vscode.Disposable {
   // Updates the status bar text, icon and tooltip from the current state.
   private render(): void {
     const effort = capitalize(this.effort);
-    if (this.paused) {
+    if (this.mode === "paused") {
       this.item.text = "$(debug-pause) Tab: paused";
+    } else if (this.mode === "external") {
+      // No agent in External mode: show flashes (e.g. "dropped"), otherwise just the mode.
+      this.item.text = this.flashText ? `$(info) Tab: ${this.flashText}` : "$(inbox) Tab: external";
     } else if (this.session === "error") {
       this.item.text = "$(error) Tab: error";
     } else if (this.flashText) {
@@ -164,7 +171,8 @@ export class Status implements vscode.Disposable {
 
   // One line describing what Tab is doing, for the tooltip and the popup.
   private summary(): string {
-    if (this.paused) return "Tab is paused";
+    if (this.mode === "paused") return "Tab is paused";
+    if (this.mode === "external") return "External mode: waiting for .tab/suggestion.json";
     if (this.session === "error") return this.detail || "Something went wrong (see the log)";
     if (this.session === "starting") return "Starting the agent…";
     if (this.session === "thinking") return "Thinking…";

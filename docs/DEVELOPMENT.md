@@ -31,7 +31,7 @@ bun run package
 Tab isn't on the Marketplace, so it's installed from the `.vsix` file (sideloading).
 
 ```bash
-code --install-extension tab-0.0.2.vsix
+code --install-extension tab-0.0.3.vsix
 ```
 
 Or in VS Code: Extensions → `...` → **Install from VSIX...**
