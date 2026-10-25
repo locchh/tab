@@ -21,7 +21,9 @@ More phases will be added later, based on the backlog and changelog.
 
 ## Phase 3 · Build MVP
 
-- [ ] `state.ts`: collect the State, write `.tab/state.json`
+- [x] `types.ts`: State shape
+- [x] `state.ts`: pure State logic (1-based positions, visits, `changed`) + tests
+- [ ] `tracker.ts`: listen to VS Code, build the State, write `.tab/state.json`
 - [ ] `triggers.ts`: typing pause + keybinding
 - [ ] `agents/agent.ts`: the contract
 - [ ] `agents/claude.ts`: Claude Code adapter
