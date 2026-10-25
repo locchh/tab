@@ -25,7 +25,8 @@ More phases will be added later, based on the backlog and changelog.
 - [x] `state.ts`: pure State logic (1-based positions, visits, `changed`) + tests
 - [x] `tracker.ts`: listen to VS Code, build the State, write `.tab/state.json`
 - [x] `triggers.ts`: typing pause + keybinding
-- [ ] `agents/agent.ts`: the contract
+- [x] `agents/agent.ts`: the contract
+- [x] `agents/process.ts`: shared process plumbing (spawn, read lines, stop) + tests
 - [ ] `agents/claude.ts`: Claude Code adapter
 - [ ] `agents/codex.ts`: Codex adapter
 - [ ] `session.ts`: lifecycle, interrupt, deadlines
