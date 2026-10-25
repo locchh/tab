@@ -1,5 +1,10 @@
 // The VS Code API. Not bundled: VS Code provides it at runtime (see --external vscode in package.json).
 import * as vscode from "vscode";
+import { ClaudeAgent } from "./agents/claude";
+import { CodexAgent } from "./agents/codex";
+// The bundled prompt, inlined into dist/extension.js as a string at build time.
+import instructions from "./instructions.md" with { type: "text" };
+import { Session } from "./session";
 import { Tracker } from "./tracker";
 import { Triggers } from "./triggers";
 
@@ -23,6 +28,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const config = vscode.workspace.getConfiguration("tab");
   const syncMs = config.get<number>("syncInterval", 300);
   const delayMs = config.get<number>("autoSuggestDelay", 2000);
+  const agentName = config.get<string>("agent", "claude");
 
   // The "Tab" log, in the Output panel (View → Output → Tab).
   const log = vscode.window.createOutputChannel("Tab");
@@ -33,15 +39,42 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(tracker);
   await tracker.start();
 
+  // Writes a timestamped line to the log.
+  const write = (message: string) => log.appendLine(`${new Date().toISOString()} ${message}`);
+
+  // The agent session. Session never knows which CLI it runs: it only gets createAgent.
+  const session = new Session({
+    createAgent: () =>
+      agentName === "codex" ? new CodexAgent(root.fsPath) : new ClaudeAgent(root.fsPath),
+    instructions,
+    getEffort: () => tracker.effort,
+    log: write,
+  });
+  context.subscriptions.push(session);
+  // The agent has now seen the changed files, so the tracker starts a fresh list.
+  session.onTurnCompleted(() => tracker.turnCompleted());
+  // Showing it as ghost text comes later (reply.ts, completion.ts). For now: log it.
+  session.onSuggestion((text) => write(`reply: ${text}`));
+  // Not awaited: starting can take a few seconds, and VS Code shouldn't wait for it.
+  void session.start();
+
   // When a trigger fires: write a fresh State first, so the agent never reads stale data.
-  // The agent isn't built yet, so for now we only log it.
   const triggers = new Triggers(delayMs, async () => {
     await tracker.writeNow();
-    log.appendLine(`${new Date().toISOString()} trigger`);
+    write("trigger");
+    await session.request();
   });
   context.subscriptions.push(triggers);
   triggers.start();
+
+  // Typing during a turn makes its answer stale: cancel it.
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeTextDocument((e) => {
+      if (e.document === vscode.window.activeTextEditor?.document) void session.cancel();
+    }),
+  );
 }
 
-// VS Code calls this on shutdown. Empty for now; later it stops the agent.
+// VS Code calls this on shutdown. Nothing to do here: everything in context.subscriptions
+// (tracker, triggers, session → agent) is cleaned up automatically.
 export function deactivate() {}

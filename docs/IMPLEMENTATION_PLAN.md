@@ -29,7 +29,7 @@ More phases will be added later, based on the backlog and changelog.
 - [x] `agents/process.ts`: shared process plumbing (spawn, read lines, stop) + tests
 - [x] `agents/claude.ts`: Claude Code adapter
 - [x] `agents/codex.ts`: Codex adapter (successful reply untested: Codex usage limit hit)
-- [ ] `session.ts`: lifecycle, interrupt, deadlines
+- [x] `session.ts`: lifecycle, interrupt, deadlines, crash restart + tests (sleep/resume, context full, retries → Error handling)
 - [ ] `reply.ts`: shape + `docVersion` check
 - [ ] `completion.ts`: show ghost text
 - [ ] `status.ts`: status bar, effort picker, log

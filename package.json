@@ -38,6 +38,15 @@
           ],
           "default": 2000,
           "description": "How long (ms) you must stop typing before Tab suggests."
+        },
+        "tab.agent": {
+          "type": "string",
+          "enum": [
+            "claude",
+            "codex"
+          ],
+          "default": "claude",
+          "description": "Which agent CLI Tab uses. It must be installed and logged in."
         }
       }
     },
