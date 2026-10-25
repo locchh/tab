@@ -15,6 +15,23 @@
   "activationEvents": [
     "onStartupFinished"
   ],
+  "contributes": {
+    "configuration": {
+      "title": "Tab",
+      "properties": {
+        "tab.syncInterval": {
+          "type": "number",
+          "enum": [
+            200,
+            300,
+            500
+          ],
+          "default": 300,
+          "description": "How often (ms) Tab writes the current State to .tab/state.json."
+        }
+      }
+    }
+  },
   "scripts": {
     "build": "bun build src/extension.ts --outdir dist --target=node --format=cjs --external vscode",
     "typecheck": "tsc",
