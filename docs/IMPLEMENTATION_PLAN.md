@@ -35,4 +35,4 @@ More phases will be added later, based on the backlog and changelog.
 - [x] `status.ts`: status bar, settings popup (effort, agent, timings, pause), log
 - [ ] Error handling from the Errors table
 - [ ] Headless VS Code test
-- [ ] README install steps
+- [x] README install steps
