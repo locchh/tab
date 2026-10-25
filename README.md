@@ -18,7 +18,7 @@ Either way, an agent CLI reads your codebase and cursor, and suggests at the cur
 | | Internal | External |
 |---|---|---|
 | Who suggests | Tab's own agent | an agent CLI you run (Claude Code, Codex, …) |
-| When | every time you pause typing | on an interval (e.g. every minute) |
+| When | every time you pause typing | on an interval (e.g. every minute), or on demand |
 | Reads the codebase + cursor | ✅ | ✅ |
 | You can talk to it while it works | ❌ | ✅ chat in the same session to steer the next suggestion |
 
@@ -65,6 +65,19 @@ while true; do codex exec "follow SKILL.md"; sleep 3; done
 
 To stop: ask Claude to cancel its loop, or `Ctrl+C` the Codex loop. Each run uses your agent's
 quota, even when nothing changed.
+
+#### On demand · no loop needed
+
+You don't have to run a loop. Call the skill once and say what you want, right where your
+cursor is:
+
+```bash
+/tab-suggest give me a skeleton of this module, no full code
+/tab-suggest write example code here
+```
+
+The answer shows up as ghost text at your cursor. Press **Tab** to accept it. It's like chatting
+with the agent, but the reply lands straight in your file.
 
 ## Requirements
 
