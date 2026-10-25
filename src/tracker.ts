@@ -39,9 +39,11 @@ export class Tracker implements vscode.Disposable {
   private listeners: vscode.Disposable[] = [];
 
   // root: the first workspace folder. syncMs: the State sync interval (200/300/500).
+  // log: where to report problems (the "Tab" log).
   constructor(
     private readonly root: vscode.Uri,
     private syncMs: number,
+    private readonly log: (message: string) => void = () => {},
   ) {}
 
   // Start listening and writing.
@@ -69,8 +71,12 @@ export class Tracker implements vscode.Disposable {
   }
 
   // Write .tab/state.json right away. Called on every sync interval and before each trigger.
+  // If one write fails, it's logged and the next one still runs: without the catch,
+  // one failure would break the chain and every later write would fail silently.
   writeNow(): Promise<void> {
-    this.writing = this.writing.then(() => this.write());
+    this.writing = this.writing
+      .then(() => this.write())
+      .catch((e) => this.log(`couldn't write state.json: ${e}`));
     return this.writing;
   }
 

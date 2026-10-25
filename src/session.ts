@@ -51,7 +51,13 @@ export class Session {
   private crashTimes: number[] = [];
   private stopped = false;
 
-  private suggestionCb: (text: string) => void = () => {};
+  // Every request gets a number (#1, #2, …), so the log reads like a story.
+  private lastTurn = 0;
+  private currentTurn = 0; // the turn the agent is working on (when busy)
+  private turnStartedAt = 0;
+
+  private suggestionCb: (text: string, turn: number) => void = () => {};
+  private noticeCb: (message: string) => void = () => {};
   private statusCb: (status: SessionStatus, detail?: string) => void = () => {};
   private turnCompletedCb: () => void = () => {};
 
@@ -80,15 +86,32 @@ export class Session {
   }
 
   // A trigger fired: ask for a suggestion. Interrupts a running turn first.
-  async request(): Promise<void> {
+  // `source` says what fired it ("typing pause", "keybinding"), for the log.
+  async request(source = "request"): Promise<void> {
+    const turn = ++this.lastTurn;
     const gen = ++this.generation;
-    if (this.busy) await this.interrupt();
+    this.options.log(`#${turn} trigger (${source})`);
+    if (this.busy) {
+      this.options.log(`#${this.currentTurn} replaced by #${turn}`);
+      await this.interrupt();
+    }
     // A newer request or a cancel came in while we waited: let it win.
-    if (gen !== this.generation || !this.agent || this.stopped) return;
+    if (gen !== this.generation || this.stopped) {
+      this.options.log(`#${turn} dropped: something newer took over`);
+      return;
+    }
+    if (!this.agent) {
+      this.options.log(`#${turn} skipped: agent not ready`);
+      this.noticeCb("agent not ready");
+      return;
+    }
 
     this.busy = true;
+    this.currentTurn = turn;
+    this.turnStartedAt = Date.now();
     this.statusCb("thinking");
     this.agent.trigger();
+    this.options.log(`#${turn} sent to agent`);
     const ms =
       this.options.getEffort() === "high"
         ? this.timing.highDeadlineMs
@@ -96,15 +119,23 @@ export class Session {
     this.deadline = setTimeout(() => this.onDeadline(), ms);
   }
 
-  // The user typed during a turn: the answer would be stale, so stop it quietly.
-  async cancel(): Promise<void> {
+  // Stop the running turn: its answer would be stale (e.g. the user typed).
+  async cancel(reason = "you kept typing"): Promise<void> {
     this.generation++;
-    if (this.busy) await this.interrupt();
+    if (!this.busy) return;
+    this.options.log(`#${this.currentTurn} cancelled: ${reason}`);
+    this.noticeCb(`cancelled: ${reason}`);
+    await this.interrupt();
   }
 
-  // Called with the reply text of every completed turn.
-  onSuggestion(cb: (text: string) => void): void {
+  // Called with the reply text (and turn number) of every completed turn.
+  onSuggestion(cb: (text: string, turn: number) => void): void {
     this.suggestionCb = cb;
+  }
+
+  // Called with a short outcome the user should see (status bar flash), e.g. "took too long".
+  onNotice(cb: (message: string) => void): void {
+    this.noticeCb = cb;
   }
 
   // Called when the session's status changes (for the status bar).
@@ -129,24 +160,27 @@ export class Session {
   private handleReply(agent: Agent, text: string): void {
     // Ignore replies from an old agent, or when no turn is running (already interrupted).
     if (agent !== this.agent || !this.busy) return;
+    const turn = this.currentTurn;
+    const seconds = ((Date.now() - this.turnStartedAt) / 1000).toFixed(1);
     this.endTurn();
+    this.options.log(`#${turn} reply in ${seconds}s`);
     this.crashTimes = []; // a successful turn resets the crash count
     this.turnCompletedCb();
-    this.suggestionCb(text);
+    this.suggestionCb(text, turn);
   }
 
   private handleError(agent: Agent, err: AgentError): void {
     if (agent !== this.agent) return;
+    const turn = this.busy ? `#${this.currentTurn} ` : "";
     this.endTurn();
-    this.options.log(`agent error (${err.kind}): ${err.message}`);
+    this.options.log(`${turn}agent error (${err.kind}): ${err.message}`);
     if (err.kind === "crashed") this.restartAfterCrash();
     else this.statusCb("error", `${err.kind}: ${err.message}`);
   }
 
   // The turn took too long: stop it and report it (an error, not a quiet cancel).
   private onDeadline(): void {
-    this.options.log("turn too long: interrupted");
-    void this.cancel();
+    void this.cancel("took too long");
   }
 
   // Stops the current turn. If the agent doesn't confirm in time, it's stuck: relaunch it.

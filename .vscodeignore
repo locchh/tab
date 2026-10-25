@@ -20,3 +20,6 @@ AGENTS.md
 
 # Old packages
 *.vsix
+
+# Local playground
+tmp/**

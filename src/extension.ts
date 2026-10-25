@@ -34,7 +34,9 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   // Start tracking the editor and writing the State.
-  const tracker = new Tracker(root, settings().get<number>("syncInterval", 300));
+  const tracker = new Tracker(root, settings().get<number>("syncInterval", 300), (m) =>
+    status.log(m),
+  );
   tracker.effort = settings().get<Effort>("effort", "low");
   status.setEffort(tracker.effort);
   status.setPaused(!settings().get<boolean>("enabled", true));
@@ -46,18 +48,28 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(completion);
 
   // Check every reply before using it: right shape, and still for what the user has open.
-  const showReply = (text: string) => {
+  // Every outcome is logged and flashed in the status bar, so nothing fails silently.
+  const showReply = (text: string, turn: number) => {
+    const outcome = (logLine: string, flash: string) => {
+      status.log(`#${turn} ${logLine}`);
+      status.flash(flash);
+    };
     const reply = parseReply(text);
-    if (!reply) return status.log(`bad reply dropped: ${text}`);
+    if (!reply) return outcome(`bad reply dropped: ${text}`, "bad reply (see log)");
 
-    const doc = vscode.window.activeTextEditor?.document;
+    const editor = vscode.window.activeTextEditor;
+    const doc = editor?.document;
     const current = doc
       ? { file: vscode.workspace.asRelativePath(doc.uri, false), docVersion: doc.version }
       : null;
-    if (!isFresh(reply, current)) return status.log("stale reply dropped");
+    if (!isFresh(reply, current)) return outcome("stale reply dropped", "dropped (you moved on)");
+    if (!reply.text) return outcome("no suggestion (agent sent empty text)", "no suggestion");
 
-    status.log(`suggestion: ${JSON.stringify(reply)}`);
-    if (doc) completion.show(doc, reply);
+    status.log(`#${turn} suggestion: ${JSON.stringify(reply)}`);
+    if (!editor) return;
+    const notShown = completion.show(editor, reply);
+    if (notShown) return outcome(`can't show as ghost text: ${notShown}`, "couldn't display");
+    status.log(`#${turn} shown`);
   };
 
   // Builds a session for the agent chosen in settings. Session never knows which CLI it runs:
@@ -72,6 +84,7 @@ export async function activate(context: vscode.ExtensionContext) {
       log: (m) => status.log(m),
     });
     s.onStatusChange((state, detail) => status.setSessionStatus(state, detail));
+    s.onNotice((message) => status.flash(message));
     // The agent has now seen the changed files, so the tracker starts a fresh list.
     s.onTurnCompleted(() => tracker.turnCompleted());
     s.onSuggestion(showReply);
@@ -83,11 +96,16 @@ export async function activate(context: vscode.ExtensionContext) {
   // Builds the triggers with the delay from settings. Rebuilt when the delay changes.
   // When a trigger fires: write a fresh State first, so the agent never reads stale data.
   const makeTriggers = () => {
-    const t = new Triggers(settings().get<number>("autoSuggestDelay", 2000), async () => {
-      if (!settings().get<boolean>("enabled", true)) return; // paused
-      await tracker.writeNow();
-      status.log("trigger");
-      await session.request();
+    const t = new Triggers(settings().get<number>("autoSuggestDelay", 2000), async (source) => {
+      if (!settings().get<boolean>("enabled", true)) return status.log("trigger ignored: paused");
+      // Any error here would otherwise vanish (nobody awaits this callback), so log it.
+      try {
+        await tracker.writeNow();
+        await session.request(source);
+      } catch (e) {
+        status.log(`trigger failed (${source}): ${e}`);
+        status.flash("trigger failed (see log)");
+      }
     });
     t.start();
     return t;

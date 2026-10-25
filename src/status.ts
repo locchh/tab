@@ -20,6 +20,9 @@ export class Status implements vscode.Disposable {
   private session: SessionStatus = "starting";
   private detail = ""; // extra info for the tooltip, e.g. an error message
   private paused = false;
+  // A short outcome shown for a few seconds, e.g. "no suggestion".
+  private flashText = "";
+  private flashTimer: ReturnType<typeof setTimeout> | undefined;
 
   constructor() {
     // A slot on the right side of the status bar. Higher priority = further left.
@@ -49,6 +52,18 @@ export class Status implements vscode.Disposable {
 
   setPaused(paused: boolean): void {
     this.paused = paused;
+    this.render();
+  }
+
+  // Shows a short outcome in the status bar for 3 seconds, then goes back to normal.
+  // So a turn that ends without ghost text never looks like "nothing happened".
+  flash(message: string): void {
+    this.flashText = message;
+    clearTimeout(this.flashTimer);
+    this.flashTimer = setTimeout(() => {
+      this.flashText = "";
+      this.render();
+    }, 3000);
     this.render();
   }
 
@@ -110,6 +125,7 @@ export class Status implements vscode.Disposable {
   }
 
   dispose(): void {
+    clearTimeout(this.flashTimer);
     this.item.dispose();
     this.output.dispose();
   }
@@ -130,6 +146,8 @@ export class Status implements vscode.Disposable {
       this.item.text = "$(debug-pause) Tab: paused";
     } else if (this.session === "error") {
       this.item.text = "$(error) Tab: error";
+    } else if (this.flashText) {
+      this.item.text = `$(info) Tab: ${this.flashText}`;
     } else if (this.session === "starting" || this.session === "thinking") {
       // loading~spin is a built-in spinning icon.
       this.item.text = `$(loading~spin) Tab: ${effort}`;

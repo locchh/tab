@@ -92,7 +92,7 @@
     "build": "bun build src/extension.ts --outdir dist --target=node --format=cjs --external vscode",
     "typecheck": "tsc",
     "package": "bun run build && bunx @vscode/vsce package --no-dependencies",
-    "test": "bun test test/",
+    "test": "bun test ./test",
     "lint": "biome check .",
     "format": "biome check --write ."
   },

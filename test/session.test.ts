@@ -92,7 +92,7 @@ describe("Session", () => {
     await session.request();
     await wait(80); // deadline is 50ms in this test
     expect(agents[0]?.interrupts).toBe(1);
-    expect(logs).toContain("turn too long: interrupted");
+    expect(logs).toContain("#1 cancelled: took too long");
   });
 
   test("a stuck agent is replaced", async () => {

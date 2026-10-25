@@ -1,9 +1,11 @@
 // Decides WHEN to ask the agent for a suggestion. Two triggers, both always on:
 //   1. Typing pause: the user stops typing for the auto-suggest delay.
 //   2. Keybinding: the user presses the "Tab: Suggest now" key. Fires immediately.
-// Both call the same onTrigger function, which the extension passes in.
+// Both call the same onTrigger function, which the extension passes in, saying which one fired.
 
 import * as vscode from "vscode";
+
+export type TriggerSource = "typing pause" | "keybinding";
 
 export class Triggers implements vscode.Disposable {
   // The running typing-pause timer, if any.
@@ -13,7 +15,7 @@ export class Triggers implements vscode.Disposable {
   // delayMs: the auto-suggest delay (1000/2000/5000). onTrigger: what to do when it fires.
   constructor(
     private readonly delayMs: number,
-    private readonly onTrigger: () => void,
+    private readonly onTrigger: (source: TriggerSource) => void,
   ) {}
 
   start(): void {
@@ -30,7 +32,7 @@ export class Triggers implements vscode.Disposable {
       // Switching files cancels the countdown: the user left that spot.
       vscode.window.onDidChangeActiveTextEditor(() => this.cancel()),
       // The keybinding (see "keybindings" in package.json) runs this command.
-      vscode.commands.registerCommand("tab.suggest", () => this.fire()),
+      vscode.commands.registerCommand("tab.suggest", () => this.fire("keybinding")),
     );
   }
 
@@ -41,7 +43,7 @@ export class Triggers implements vscode.Disposable {
 
   private restart(): void {
     this.cancel();
-    this.timer = setTimeout(() => this.fire(), this.delayMs);
+    this.timer = setTimeout(() => this.fire("typing pause"), this.delayMs);
   }
 
   private cancel(): void {
@@ -49,8 +51,8 @@ export class Triggers implements vscode.Disposable {
     this.timer = undefined;
   }
 
-  private fire(): void {
+  private fire(source: TriggerSource): void {
     this.cancel();
-    this.onTrigger();
+    this.onTrigger(source);
   }
 }
