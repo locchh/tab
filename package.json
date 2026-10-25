@@ -28,9 +28,32 @@
           ],
           "default": 300,
           "description": "How often (ms) Tab writes the current State to .tab/state.json."
+        },
+        "tab.autoSuggestDelay": {
+          "type": "number",
+          "enum": [
+            1000,
+            2000,
+            5000
+          ],
+          "default": 2000,
+          "description": "How long (ms) you must stop typing before Tab suggests."
         }
       }
-    }
+    },
+    "commands": [
+      {
+        "command": "tab.suggest",
+        "title": "Tab: Suggest now"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "tab.suggest",
+        "key": "ctrl+alt+space",
+        "when": "editorTextFocus"
+      }
+    ]
   },
   "scripts": {
     "build": "bun build src/extension.ts --outdir dist --target=node --format=cjs --external vscode",
