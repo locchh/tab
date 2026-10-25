@@ -1,0 +1,21 @@
+# Backlog
+
+Ideas and leftovers for after the MVP. Grouped items become the next phase.
+
+## Robustness
+
+- Sleep after idle, resume on the next trigger
+- Fresh session when the agent's context is full
+- Retries: rate limit, network, quota (see Errors in SKETCH.md)
+- Retry a bad reply once with a format reminder
+- `sleeping` and `offline` statuses
+
+## Quality
+
+- Headless VS Code test (everything up to the provider)
+
+## Ideas
+
+- Comments in suggestions, or an explanation shown on the side
+- Trigger on cursor move when the line looks unfinished
+- macOS and Windows support
