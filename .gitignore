@@ -28,3 +28,7 @@ Thumbs.db
 
 # Manual test playground
 tmp/
+
+# Agents
+.claude
+.codex
