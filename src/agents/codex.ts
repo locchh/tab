@@ -76,7 +76,7 @@ export class CodexAgent implements Agent {
     });
 
     // The handshake: initialize, then tell Codex we're ready, then open a read-only thread.
-    await this.request("initialize", { clientInfo: { name: "tab", version: "0.0.1" } });
+    await this.request("initialize", { clientInfo: { name: "tab", version: "0.0.2" } });
     writeLine(child, { jsonrpc: "2.0", method: "initialized" });
     const res = (await this.request("thread/start", {
       cwd: this.cwd,

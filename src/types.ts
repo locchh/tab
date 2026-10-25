@@ -2,8 +2,8 @@
 // Matches the State section in docs/SKETCH.md. Types only: no logic, no vscode import,
 // so any file (including unit tests) can use them.
 
-// How far the agent looks and how much it writes.
-export type Effort = "low" | "medium" | "high";
+// How far the agent looks and how much it writes. "auto" = the agent decides both.
+export type Effort = "low" | "medium" | "high" | "auto";
 
 // A spot in a file. Both numbers are 1-based (VS Code uses 0-based; state.ts converts).
 export interface Position {

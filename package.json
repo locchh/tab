@@ -2,7 +2,7 @@
   "name": "tab",
   "displayName": "Tab",
   "publisher": "locchh",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "repository": {
     "type": "git",
     "url": "https://github.com/locchh/tab"
@@ -29,13 +29,15 @@
           "enum": [
             "low",
             "medium",
-            "high"
+            "high",
+            "auto"
           ],
           "default": "low",
           "enumDescriptions": [
             "Finish the current line or sentence",
             "Finish the half-written block",
-            "Write the whole file or document"
+            "Write the whole file or document",
+            "The agent decides how far to look and how much to write"
           ],
           "description": "How far the agent looks and how much it writes."
         },

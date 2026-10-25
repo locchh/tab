@@ -112,8 +112,10 @@ export class Session {
     this.statusCb("thinking");
     this.agent.trigger();
     this.options.log(`#${turn} sent to agent`);
+    // High and Auto may write a whole file, so they get the longer deadline.
+    const effort = this.options.getEffort();
     const ms =
-      this.options.getEffort() === "high"
+      effort === "high" || effort === "auto"
         ? this.timing.highDeadlineMs
         : this.timing.lowMediumDeadlineMs;
     this.deadline = setTimeout(() => this.onDeadline(), ms);

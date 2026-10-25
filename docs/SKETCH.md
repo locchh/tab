@@ -13,6 +13,7 @@ The agent does not know the project at the start. It explores with its own tools
 | **Low** | The current line or sentence | Only the current file |
 | **Medium** | A half-written block: a function, component, paragraph, or section | Content related to that block: linked files, references, similar code or writing nearby |
 | **High** | A whole file or document | The wider context: the module or folder, sibling files, existing docs, conventions and style used across the project |
+| **Auto** | Whatever the spot needs: line, block or file | As much as that needs; the agent decides |
 
 Keeping up with changes:
 
@@ -51,7 +52,7 @@ At launch, the agent only receives the instructions. It learns the State only by
 ### Functional Requirements
 
 - Ghost text for code and prose
-- Three effort levels
+- Four effort levels (Low, Medium, High, Auto)
 - Works with any CLI agent
 - Read-only agent
 - Long-lived session
@@ -167,7 +168,7 @@ What the extension knows about the user. Kept in memory and pushed to `.tab/` ev
 | Field         | Meaning                                                                    | How to get it (VS Code API)                                                                                     |
 | ------------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | `syncedAt`    | When this State was pushed to `.tab/`.                                   | `new Date().toISOString()` at each sync.                                                                        |
-| `effort`      | `low`, `medium` or `high`.                                                 | The extension's own setting, chosen from the status bar.                                                        |
+| `effort`      | `low`, `medium`, `high` or `auto`.                                         | The extension's own setting, chosen from the status bar.                                                        |
 | `active`      | Where the user is now.                                                     | `window.activeTextEditor`; updated on `window.onDidChangeActiveTextEditor`.                                     |
 | `.file`       | Path of the active file, relative to the workspace root.                   | `workspace.asRelativePath(editor.document.uri)`                                                                 |
 | `.language`   | Language of the active file (code or prose, e.g. `typescript`, `markdown`). | `editor.document.languageId`                                                                                    |
@@ -306,7 +307,7 @@ Deadlines: time limits so nothing hangs forever. The timer starts when the reque
 | What | Deadline | If it's missed |
 |---|---|---|
 | Low, Medium suggestion | 30 s | Interrupt the turn, status `error` (see "Turn too long") |
-| High suggestion | 120 s | Same. Writing a whole file takes longer. |
+| High, Auto suggestion | 120 s | Same. Writing a whole file takes longer. |
 | Agent start or resume | 30 s | Treat it as a crash (see "Agent process crashes") |
 | Interrupt confirmed | 5 s | The agent is stuck: kill it and relaunch |
 

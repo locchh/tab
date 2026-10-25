@@ -97,6 +97,11 @@ export class Status implements vscode.Disposable {
           { label: "Low", detail: "Finish the current line or sentence", value: "low" },
           { label: "Medium", detail: "Finish the half-written block", value: "medium" },
           { label: "High", detail: "Write the whole file or document", value: "high" },
+          {
+            label: "Auto",
+            detail: "The agent decides how far to look and how much to write",
+            value: "auto",
+          },
         ]);
       case "agent":
         return this.pickAndSave("agent", "Agent", [

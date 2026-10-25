@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.2 · 2026-10-25
+
+- Auto effort: the agent decides how far to look and how much to write
+
 ## 0.0.1 · 2026-10-25 · MVP
 
 - Ghost-text suggestions for code and prose, accepted with Tab

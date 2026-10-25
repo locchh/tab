@@ -6,7 +6,7 @@ Tab runs Claude Code or Codex in the background. When you pause, the agent reads
 project and suggests what comes next, right at the cursor. Press **Tab** to accept.
 
 - **Code and prose:** functions, tests, docs, READMEs
-- **Three effort levels:** finish the line, finish the block, or write the whole file
+- **Effort levels:** finish the line, the block, or the whole file, or let the agent decide (Auto)
 - **Looks around first:** the agent reads related files, not just the one you're in
 - **Read-only:** the agent never edits your files
 - **Your own agent:** uses your installed CLI and login, no extra account
@@ -25,7 +25,7 @@ Tab isn't on the Marketplace yet. Build it and install the `.vsix`:
 git clone https://github.com/locchh/tab && cd tab
 bun install
 bun run package
-code --install-extension tab-0.0.1.vsix
+code --install-extension tab-0.0.2.vsix
 ```
 
 Reload VS Code and look for **✨ Tab: Low** in the status bar.
@@ -45,6 +45,7 @@ Reload VS Code and look for **✨ Tab: Low** in the status bar.
 | Low | The rest of the line or sentence |
 | Medium | The rest of the function, paragraph or section |
 | High | The whole file or document |
+| Auto | Whatever the spot needs: the agent decides |
 
 ## Good to know
 
