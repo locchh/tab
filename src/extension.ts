@@ -4,6 +4,7 @@ import { ClaudeAgent } from "./agents/claude";
 import { CodexAgent } from "./agents/codex";
 // The bundled prompt, inlined into dist/extension.js as a string at build time.
 import instructions from "./instructions.md" with { type: "text" };
+import { isFresh, parseReply } from "./reply";
 import { Session } from "./session";
 import { Tracker } from "./tracker";
 import { Triggers } from "./triggers";
@@ -53,8 +54,20 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(session);
   // The agent has now seen the changed files, so the tracker starts a fresh list.
   session.onTurnCompleted(() => tracker.turnCompleted());
-  // Showing it as ghost text comes later (reply.ts, completion.ts). For now: log it.
-  session.onSuggestion((text) => write(`reply: ${text}`));
+  // Check every reply before using it: right shape, and still for what the user has open.
+  session.onSuggestion((text) => {
+    const reply = parseReply(text);
+    if (!reply) return write(`bad reply dropped: ${text}`);
+
+    const doc = vscode.window.activeTextEditor?.document;
+    const current = doc
+      ? { file: vscode.workspace.asRelativePath(doc.uri, false), docVersion: doc.version }
+      : null;
+    if (!isFresh(reply, current)) return write("stale reply dropped");
+
+    // Showing it as ghost text comes next (completion.ts). For now: log it.
+    write(`suggestion: ${JSON.stringify(reply)}`);
+  });
   // Not awaited: starting can take a few seconds, and VS Code shouldn't wait for it.
   void session.start();
 

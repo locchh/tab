@@ -61,3 +61,12 @@ export interface State {
   visits: Visit[]; // most recent first, at most 20
   diagnostics: Diagnostic[]; // at most 50
 }
+
+// What the agent sends back (see Reply in docs/SKETCH.md). Checked by reply.ts.
+export interface Reply {
+  docVersion: number; // the active.docVersion the agent read
+  file: string; // the file the suggestion is for
+  start: Position; // range to replace, 1-based; same as end for a plain insert
+  end: Position;
+  text: string; // the suggestion; "" means no suggestion
+}

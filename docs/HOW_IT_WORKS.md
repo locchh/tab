@@ -13,11 +13,13 @@ For the why behind it, see [SKETCH.md](SKETCH.md). For the file list, see [DESIG
 | `types.ts` | Shapes of the State | No |
 | `triggers.ts` | Decides *when* to ask: typing pause or keybinding | Yes |
 | `session.ts` | Keeps one agent alive, runs one turn at a time | No |
+| `reply.ts` | Checks the agent's reply: right shape, still fresh | No |
 | `agents/agent.ts` | The contract every agent follows | No |
 | `agents/claude.ts` | Talks to Claude Code (JSON lines) | No |
 | `agents/codex.ts` | Talks to Codex (JSON-RPC) | No |
 | `agents/process.ts` | Shared plumbing: spawn, read lines, write, stop | No |
-| `instructions.md` | The prompt the agent gets at launch | — |
+| `instructions.md` | The prompt the agent gets at launch (bundled as a string) | — |
+| `markdown.d.ts` | Tells TypeScript that `.md` imports are strings | — |
 
 Files without `vscode` can be unit-tested with `bun test`.
 
@@ -54,7 +56,7 @@ How they're connected:
 | Editor | typing in the active file | `session.cancel()` |
 | Session | turn completed | `tracker.turnCompleted()` (clears `changed`) |
 | Session | needs the deadline | reads `tracker.effort` |
-| Session | reply | log (ghost text later) |
+| Session | reply | `parseReply` → `isFresh` → log (ghost text later) |
 
 ## 1. Startup
 
@@ -147,7 +149,14 @@ sequenceDiagram
     Se->>Ext: onTurnCompleted()
     Ext->>Tr: turnCompleted() (clear changed)
     Se->>Ext: onSuggestion(text)
-    Ext->>Ext: log it (ghost text later)
+    Ext->>Ext: parseReply(text)
+    alt bad shape
+        Ext->>Ext: log "bad reply dropped"
+    else wrong file or docVersion changed
+        Ext->>Ext: log "stale reply dropped"
+    else good
+        Ext->>Ext: log suggestion (ghost text later)
+    end
 ```
 
 ## 4. When things go wrong
