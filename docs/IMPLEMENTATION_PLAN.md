@@ -32,7 +32,7 @@ More phases will be added later, based on the backlog and changelog.
 - [x] `session.ts`: lifecycle, interrupt, deadlines, crash restart + tests (sleep/resume, context full, retries → Error handling)
 - [x] `reply.ts`: shape + `docVersion` check + tests (retry once on bad reply → Error handling)
 - [x] `completion.ts`: show ghost text
-- [ ] `status.ts`: status bar, effort picker, log
+- [x] `status.ts`: status bar, settings popup (effort, agent, timings, pause), log
 - [ ] Error handling from the Errors table
 - [ ] Headless VS Code test
 - [ ] README install steps

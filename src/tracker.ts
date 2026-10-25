@@ -41,7 +41,7 @@ export class Tracker implements vscode.Disposable {
   // root: the first workspace folder. syncMs: the State sync interval (200/300/500).
   constructor(
     private readonly root: vscode.Uri,
-    private readonly syncMs: number,
+    private syncMs: number,
   ) {}
 
   // Start listening and writing.
@@ -72,6 +72,13 @@ export class Tracker implements vscode.Disposable {
   writeNow(): Promise<void> {
     this.writing = this.writing.then(() => this.write());
     return this.writing;
+  }
+
+  // The sync interval setting changed: restart the timer with the new value.
+  setSyncInterval(ms: number): void {
+    this.syncMs = ms;
+    clearInterval(this.timer);
+    this.timer = setInterval(() => this.writeNow(), ms);
   }
 
   // A turn finished: the agent has seen the changed files, so start a fresh list.

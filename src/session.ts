@@ -8,6 +8,9 @@
 import type { Agent, AgentError } from "./agents/agent";
 import type { Effort } from "./types";
 
+// What the session is doing, for the status bar.
+export type SessionStatus = "starting" | "ready" | "thinking" | "error";
+
 export interface SessionOptions {
   createAgent: () => Agent; // makes a fresh agent (claude or codex)
   instructions: string; // the bundled prompt, given at launch
@@ -49,6 +52,7 @@ export class Session {
   private stopped = false;
 
   private suggestionCb: (text: string) => void = () => {};
+  private statusCb: (status: SessionStatus, detail?: string) => void = () => {};
   private turnCompletedCb: () => void = () => {};
 
   constructor(private readonly options: SessionOptions) {
@@ -62,13 +66,16 @@ export class Session {
     agent.onReply((text) => this.handleReply(agent, text));
     agent.onError((err) => this.handleError(agent, err));
     this.agent = agent;
+    this.statusCb("starting");
     try {
       await agent.start(this.options.instructions);
       this.options.log("agent started");
+      this.statusCb("ready");
     } catch (e) {
       const err = e as AgentError;
       this.agent = undefined;
       this.options.log(`agent failed to start (${err.kind}): ${err.message}`);
+      this.statusCb("error", `Agent failed to start (${err.kind}): ${err.message}`);
     }
   }
 
@@ -80,6 +87,7 @@ export class Session {
     if (gen !== this.generation || !this.agent || this.stopped) return;
 
     this.busy = true;
+    this.statusCb("thinking");
     this.agent.trigger();
     const ms =
       this.options.getEffort() === "high"
@@ -97,6 +105,11 @@ export class Session {
   // Called with the reply text of every completed turn.
   onSuggestion(cb: (text: string) => void): void {
     this.suggestionCb = cb;
+  }
+
+  // Called when the session's status changes (for the status bar).
+  onStatusChange(cb: (status: SessionStatus, detail?: string) => void): void {
+    this.statusCb = cb;
   }
 
   // Called when a turn completes, so the tracker can clear `changed`.
@@ -127,6 +140,7 @@ export class Session {
     this.endTurn();
     this.options.log(`agent error (${err.kind}): ${err.message}`);
     if (err.kind === "crashed") this.restartAfterCrash();
+    else this.statusCb("error", `${err.kind}: ${err.message}`);
   }
 
   // The turn took too long: stop it and report it (an error, not a quiet cancel).
@@ -162,6 +176,7 @@ export class Session {
     if (this.crashTimes.length > MAX_CRASHES) {
       this.options.log("agent crashed too often: stopped");
       this.agent = undefined;
+      this.statusCb("error", "The agent crashed too often. Change a setting or reload to retry.");
       return;
     }
     const { backoffMs } = this.timing;
@@ -171,6 +186,8 @@ export class Session {
   }
 
   private endTurn(): void {
+    // Back to "ready" only if a turn was actually running.
+    if (this.busy && !this.stopped) this.statusCb("ready");
     this.busy = false;
     clearTimeout(this.deadline);
     this.deadline = undefined;

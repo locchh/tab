@@ -19,6 +19,26 @@
     "configuration": {
       "title": "Tab",
       "properties": {
+        "tab.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Turn Tab's suggestions on or off."
+        },
+        "tab.effort": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "default": "low",
+          "enumDescriptions": [
+            "Finish the current line or sentence",
+            "Finish the half-written block",
+            "Write the whole file or document"
+          ],
+          "description": "How far the agent looks and how much it writes."
+        },
         "tab.syncInterval": {
           "type": "number",
           "enum": [
@@ -54,6 +74,10 @@
       {
         "command": "tab.suggest",
         "title": "Tab: Suggest now"
+      },
+      {
+        "command": "tab.menu",
+        "title": "Tab: Settings"
       }
     ],
     "keybindings": [
