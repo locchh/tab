@@ -18,8 +18,18 @@ export interface AgentError {
   retryAfterMs?: number; // rate limits sometimes say how long to wait
 }
 
+// Guesses the error kind from an agent's error text, for agents that only give us words.
+export function errorKindFromText(text: string): AgentErrorKind {
+  if (/log ?in|auth|api key|unauthorized|401/i.test(text)) return "auth";
+  if (/usage limit|quota|credit|billing/i.test(text)) return "quota";
+  if (/rate.?limit|429|overloaded/i.test(text)) return "rate-limit";
+  if (/network|ECONN|ENOTFOUND|fetch failed|connection/i.test(text)) return "network";
+  return "other";
+}
+
 export interface Agent {
   // Launch the CLI read-only with the bundled instructions. Resolves when it's ready.
+  // Rejects with an AgentError if it can't start (e.g. kind "not-installed").
   start(instructions: string): Promise<void>;
   // Send "go, make a suggestion now". The answer arrives through onReply.
   trigger(): void;
