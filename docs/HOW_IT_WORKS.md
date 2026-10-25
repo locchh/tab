@@ -14,6 +14,7 @@ For the why behind it, see [SKETCH.md](SKETCH.md). For the file list, see [DESIG
 | `triggers.ts` | Decides *when* to ask: typing pause or keybinding | Yes |
 | `session.ts` | Keeps one agent alive, runs one turn at a time | No |
 | `reply.ts` | Checks the agent's reply: right shape, still fresh | No |
+| `completion.ts` | Shows the checked suggestion as ghost text | Yes |
 | `agents/agent.ts` | The contract every agent follows | No |
 | `agents/claude.ts` | Talks to Claude Code (JSON lines) | No |
 | `agents/codex.ts` | Talks to Codex (JSON-RPC) | No |
@@ -25,7 +26,7 @@ Files without `vscode` can be unit-tested with `bun test`.
 
 ## Who creates whom
 
-`extension.ts` creates the three main pieces. They never import each other: `extension.ts`
+`extension.ts` creates the main pieces. They never import each other: `extension.ts`
 connects them with callbacks.
 
 ```mermaid
@@ -35,6 +36,8 @@ flowchart TB
     Ext -- creates --> Tracker[Tracker]
     Ext -- creates --> Triggers[Triggers]
     Ext -- creates --> Session[Session]
+    Ext -- creates --> Completion[Completion]
+    Ext -- uses --> Reply[reply.ts]
 
     Tracker -- uses --> State[state.ts]
     Tracker -- uses --> Types[types.ts]
@@ -56,7 +59,7 @@ How they're connected:
 | Editor | typing in the active file | `session.cancel()` |
 | Session | turn completed | `tracker.turnCompleted()` (clears `changed`) |
 | Session | needs the deadline | reads `tracker.effort` |
-| Session | reply | `parseReply` → `isFresh` → log (ghost text later) |
+| Session | reply | `parseReply` → `isFresh` → `completion.show()` |
 
 ## 1. Startup
 
@@ -124,6 +127,8 @@ sequenceDiagram
     participant Ag as Agent adapter
     participant CLI as claude / codex
     participant F as .tab/state.json
+    participant Co as Completion
+    participant VSC as VS Code
 
     alt typing pause
         User->>Trg: stops typing for the delay (1/2/5s)
@@ -155,7 +160,12 @@ sequenceDiagram
     else wrong file or docVersion changed
         Ext->>Ext: log "stale reply dropped"
     else good
-        Ext->>Ext: log suggestion (ghost text later)
+        Ext->>Co: show(doc, reply)
+        Co->>VSC: inlineSuggest.trigger
+        VSC->>Co: provideInlineCompletionItems()
+        Co-->>VSC: suggestion (if same document + docVersion)
+        VSC-->>User: gray ghost text
+        User->>VSC: Tab to accept, or keep typing to dismiss
     end
 ```
 
